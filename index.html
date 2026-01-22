@@ -1,219 +1,286 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>销售智库</title>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    
-    <style>
-        /* 样式区保持不变 */
-        :root { --primary: #2563eb; --bg: #f1f5f9; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: #333; margin: 0; padding: 20px; padding-top: 70px; }
-        .search-box { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 12px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); display: flex; gap: 12px; align-items: center; }
-        .search-input { flex: 1; border: none; background: #f1f5f9; padding: 12px 16px; border-radius: 20px; font-size: 15px; }
-        .search-input:focus { outline: 2px solid var(--primary); background: #fff; }
-        .add-btn { background: var(--primary); color: #fff; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .filter-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 5px 0 15px 0; -webkit-overflow-scrolling: touch; }
-        .filter-scroll::-webkit-scrollbar { display: none; }
-        .filter-btn { white-space: nowrap; padding: 8px 16px; border-radius: 20px; font-size: 13px; background: #fff; border: 1px solid #e2e8f0; color: #64748b; transition: 0.2s; }
-        .filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); font-weight: 600; }
-        .card { background: #fff; border-radius: 16px; padding: 18px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); position: relative; }
-        .delete-btn { position: absolute; top: 15px; right: 15px; color: #cbd5e1; font-size: 16px; padding: 5px; z-index: 2; }
-        .card-tag { font-size: 11px; padding: 4px 10px; border-radius: 6px; margin-bottom: 10px; display: inline-block; font-weight: 700; }
-        .tag-成交案例 { background: #dcfce7; color: #166534; } .tag-大单思路 { background: #fef9c3; color: #854d0e; } .tag-疑虑解答 { background: #fee2e2; color: #991b1b; } .tag-话术技巧 { background: #dbeafe; color: #1e40af; }
-        .card-title { font-size: 17px; font-weight: 700; color: #1e293b; margin-bottom: 8px; }
-        .card-content { font-size: 14px; color: #64748b; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.6; }
-        .card-footer { margin-top: 12px; font-size: 12px; color: #94a3b8; display: flex; justify-content: space-between; border-top: 1px solid #f1f5f9; padding-top: 10px;}
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 100; display: none; align-items: flex-end; }
-        .modal { background: #fff; width: 100%; height: 85vh; border-radius: 24px 24px 0 0; padding: 25px; overflow-y: auto; }
-        .form-control { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 16px; background: #f8fafc; }
-        textarea.form-control { height: 180px; resize: none; line-height: 1.6; }
-        .btn-block { width: 100%; padding: 16px; background: var(--primary); color: #fff; border:none; border-radius: 12px; font-size: 16px; font-weight: 700; }
-        .loading { text-align: center; padding: 60px 20px; color: #94a3b8; font-size: 14px; }
-        #statusLog { color: red; font-size: 12px; text-align: center; margin-top: 10px; white-space: pre-wrap;}
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+<title>销售智库 · 团队版</title>
+
+<style>
+:root { --primary:#2563eb; --bg:#f1f5f9; }
+*{box-sizing:border-box;}
+body{
+    margin:0;padding:70px 20px 20px;
+    font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+    background:var(--bg);color:#333;
+}
+.search-box{
+    position:fixed;top:0;left:0;right:0;z-index:50;
+    background:rgba(255,255,255,.95);
+    backdrop-filter:blur(10px);
+    padding:12px 20px;display:flex;gap:10px;
+    box-shadow:0 4px 20px rgba(0,0,0,.05);
+}
+.search-input{
+    flex:1;border:none;background:#f1f5f9;
+    padding:12px 16px;border-radius:20px;
+}
+.add-btn{
+    width:40px;height:40px;border-radius:50%;
+    border:none;background:var(--primary);
+    color:#fff;font-size:22px;
+    display:none;
+}
+.admin-btn{
+    border:none;background:#e2e8f0;
+    border-radius:20px;padding:10px 14px;
+    font-size:13px;
+}
+.filter-scroll{
+    display:flex;gap:10px;overflow-x:auto;
+    padding-bottom:15px;
+}
+.filter-btn{
+    padding:8px 16px;border-radius:20px;
+    background:#fff;border:1px solid #e2e8f0;
+    font-size:13px;white-space:nowrap;
+}
+.filter-btn.active{
+    background:var(--primary);color:#fff;
+    border-color:var(--primary);
+}
+.card{
+    background:#fff;border-radius:16px;
+    padding:18px;margin-bottom:15px;
+    box-shadow:0 2px 8px rgba(0,0,0,.03);
+    position:relative;
+}
+.delete-btn{
+    position:absolute;top:12px;right:12px;
+    font-size:16px;color:#cbd5e1;
+}
+.card-tag{
+    font-size:11px;font-weight:700;
+    padding:4px 10px;border-radius:6px;
+    display:inline-block;margin-bottom:8px;
+}
+.tag-疑虑解答{background:#fee2e2;color:#991b1b;}
+.tag-成交案例{background:#dcfce7;color:#166534;}
+.tag-大单思路{background:#fef9c3;color:#854d0e;}
+.tag-话术技巧{background:#dbeafe;color:#1e40af;}
+.card-title{font-size:17px;font-weight:700;margin-bottom:6px;}
+.card-content{
+    font-size:14px;color:#64748b;
+    line-height:1.6;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+}
+.card-footer{
+    margin-top:10px;font-size:12px;color:#94a3b8;
+    display:flex;justify-content:space-between;
+}
+.modal-overlay{
+    position:fixed;inset:0;
+    background:rgba(0,0,0,.6);
+    display:none;align-items:flex-end;
+    z-index:100;
+}
+.modal{
+    background:#fff;width:100%;
+    height:85vh;border-radius:24px 24px 0 0;
+    padding:25px;overflow-y:auto;
+}
+.form-control{
+    width:100%;padding:14px;margin-bottom:12px;
+    border-radius:12px;border:1px solid #e2e8f0;
+}
+textarea.form-control{height:200px;}
+.btn-block{
+    width:100%;padding:16px;
+    background:var(--primary);
+    color:#fff;border:none;
+    border-radius:12px;font-weight:700;
+}
+.loading{text-align:center;color:#94a3b8;padding:60px;}
+</style>
 </head>
+
 <body>
-    <div class="search-box">
-        <input type="text" class="search-input" placeholder="🔍 搜问题..." id="searchInput" oninput="renderList()">
-        <button class="add-btn" onclick="openModal('addModal')">+</button>
-    </div>
 
-    <div class="filter-scroll">
-        <div class="filter-btn active" onclick="setFilter('all', this)">全部</div>
-        <div class="filter-btn" onclick="setFilter('疑虑解答', this)">❓ 疑虑解答</div>
-        <div class="filter-btn" onclick="setFilter('成交案例', this)">🏆 成交案例</div>
-        <div class="filter-btn" onclick="setFilter('大单思路', this)">💎 大单思路</div>
-        <div class="filter-btn" onclick="setFilter('话术技巧', this)">🗣️ 话术技巧</div>
-    </div>
+<div class="search-box">
+    <input id="searchInput" class="search-input" placeholder="🔍 搜问题…" oninput="renderList()" />
+    <button class="admin-btn" onclick="adminLogin()">🔐 管理</button>
+    <button id="addBtn" class="add-btn" onclick="openModal('addModal')">+</button>
+</div>
 
-    <div id="gridContainer">
-        <div class="loading">🚀 正在直连云端...</div>
-    </div>
-    <div id="statusLog"></div>
+<div class="filter-scroll">
+    <div class="filter-btn active" onclick="setFilter('all',this)">全部</div>
+    <div class="filter-btn" onclick="setFilter('疑虑解答',this)">疑虑解答</div>
+    <div class="filter-btn" onclick="setFilter('成交案例',this)">成交案例</div>
+    <div class="filter-btn" onclick="setFilter('大单思路',this)">大单思路</div>
+    <div class="filter-btn" onclick="setFilter('话术技巧',this)">话术技巧</div>
+</div>
 
-    <div class="modal-overlay" id="addModal">
-        <div class="modal">
-            <h2 style="margin:0 0 25px 0;">📝 发布</h2>
-            <select class="form-control" id="inputType"><option>疑虑解答</option><option>成交案例</option><option>大单思路</option><option>话术技巧</option></select>
-            <input type="text" class="form-control" id="inputTitle" placeholder="标题">
-            <textarea class="form-control" id="inputContent" placeholder="内容"></textarea>
-            <input type="text" class="form-control" id="inputAuthor" placeholder="分享人">
-            <button class="btn-block" onclick="saveData()">发布</button>
-            <button onclick="closeModal('addModal')" style="width:100%; padding:15px; margin-top:10px; border:none; background:none; color:#999">关闭</button>
-        </div>
-    </div>
+<div id="gridContainer"><div class="loading">加载中…</div></div>
 
-    <div class="modal-overlay" id="detailModal">
-        <div class="modal">
-            <h2 id="detailTitle" style="margin:0 0 15px 0;"></h2>
-            <div id="detailContent" class="detail-content" style="font-size:16px; line-height:1.6; color:#333; margin-bottom:30px; white-space: pre-wrap;"></div>
-            <button class="btn-block" onclick="closeModal('detailModal')">关闭</button>
-        </div>
-    </div>
+<!-- 发布 -->
+<div class="modal-overlay" id="addModal">
+<div class="modal">
+<h2>发布内容</h2>
+<select id="inputType" class="form-control" onchange="fillTemplate()">
+<option>疑虑解答</option>
+<option>成交案例</option>
+<option>大单思路</option>
+<option>话术技巧</option>
+</select>
+<input id="inputTitle" class="form-control" placeholder="标题">
+<textarea id="inputContent" class="form-control" placeholder="内容"></textarea>
+<input id="inputAuthor" class="form-control" placeholder="分享人">
+<button class="btn-block" onclick="saveData()">发布</button>
+<button onclick="closeModal('addModal')" class="btn-block" style="background:#e2e8f0;color:#333;margin-top:10px;">关闭</button>
+</div>
+</div>
+
+<!-- 详情 -->
+<div class="modal-overlay" id="detailModal">
+<div class="modal">
+<h2 id="detailTitle"></h2>
+<pre id="detailContent" style="white-space:pre-wrap;font-size:15px;line-height:1.6;"></pre>
+<button class="btn-block" onclick="closeModal('detailModal')">关闭</button>
+</div>
+</div>
 
 <script>
-    // 🔑 你的钥匙 (从截图 image_7080d8.png 提取)
-    const APP_ID = '711a5754d90f2ed8dcafc8ebb1b640cd';
-    const REST_KEY = '440f810266f7e9b5a3e50b59480d7e2e';
-    
-    // API 基础地址
-    const BASE_URL = 'https://api.bmobcloud.com/1/classes/SalesData';
+/* ====== 配置 ====== */
+const APP_ID='711a5754d90f2ed8dcafc8ebb1b640cd';
+const REST_KEY='440f810266f7e9b5a3e50b59480d7e2e';
+const BASE_URL='https://api.bmobcloud.com/1/classes/SalesData';
+const ADMIN_PASSWORD='123456';
 
-    let allData = [];
-    let currentFilter = 'all';
+/* ====== 权限 ====== */
+const IS_ADMIN = localStorage.getItem('isAdmin')==='1';
+if(IS_ADMIN) document.getElementById('addBtn').style.display='flex';
 
-    // 1. 原生网络请求函数 (不依赖任何 SDK)
-    async function apiRequest(method, url, body = null) {
-        const headers = {
-            'X-Bmob-Application-Id': APP_ID,
-            'X-Bmob-REST-API-Key': REST_KEY,
-            'Content-Type': 'application/json'
-        };
-        const options = { method, headers };
-        if (body) options.body = JSON.stringify(body);
+/* ====== 模板 ====== */
+const templates={
+'疑虑解答':`客户原话：
+核心担心：
+标准回应：
+补充说明：
+适用人群：`,
+'成交案例':`客户背景：
+成交产品：
+关键转折点：
+用到的话术：
+复盘总结：`,
+'大单思路':`适合客户：
+核心逻辑：
+操作步骤：
+注意事项：`,
+'话术技巧':`使用场景：
+原话术：
+优化后话术：
+为什么这样说：`
+};
 
-        try {
-            const response = await fetch(url, options);
-            if (!response.ok) {
-                const errText = await response.text();
-                throw new Error(`请求失败: ${response.status} - ${errText}`);
-            }
-            return await response.json();
-        } catch (error) {
-            document.getElementById('statusLog').innerText = "❌ 网络错误: " + error.message;
-            throw error;
-        }
-    }
+function fillTemplate(){
+    document.getElementById('inputContent').value=
+    templates[document.getElementById('inputType').value];
+}
 
-    // 2. 加载数据
-    async function loadData() {
-        try {
-            // 按时间倒序取500条
-            const res = await apiRequest('GET', `${BASE_URL}?order=-createdAt&limit=500`);
-            allData = res.results || [];
-            renderList();
-        } catch (e) {
-            console.error(e);
-        }
-    }
+/* ====== 管理员 ====== */
+function adminLogin(){
+    const pwd=prompt('请输入管理员密码');
+    if(pwd===ADMIN_PASSWORD){
+        localStorage.setItem('isAdmin','1');
+        location.reload();
+    }else alert('密码错误');
+}
 
-    // 3. 发布数据
-    async function saveData() {
-        const title = document.getElementById('inputTitle').value;
-        const content = document.getElementById('inputContent').value;
-        if(!title || !content) return alert('请填写完整');
+/* ====== 网络 ====== */
+async function apiRequest(method,url,body){
+    const res=await fetch(url,{
+        method,
+        headers:{
+            'X-Bmob-Application-Id':APP_ID,
+            'X-Bmob-REST-API-Key':REST_KEY,
+            'Content-Type':'application/json'
+        },
+        body:body?JSON.stringify(body):null
+    });
+    return res.json();
+}
 
-        const data = {
-            type: document.getElementById('inputType').value,
-            title: title,
-            content: content,
-            author: document.getElementById('inputAuthor').value || "匿名"
-        };
+/* ====== 数据 ====== */
+let allData=[],currentFilter='all';
 
-        try {
-            await apiRequest('POST', BASE_URL, data);
-            alert('✅ 发布成功！');
-            closeModal('addModal');
-            document.getElementById('inputTitle').value = '';
-            document.getElementById('inputContent').value = '';
-            loadData(); // 刷新
-        } catch (e) {
-            alert('发布失败，请检查网络');
-        }
-    }
+async function loadData(){
+    const res=await apiRequest('GET',`${BASE_URL}?order=-createdAt&limit=500`);
+    allData=res.results||[];
+    renderList();
+}
 
-    // 4. 删除数据
-    async function deleteItem(id) {
-        if(!confirm('确定删除?')) return;
-        try {
-            await apiRequest('DELETE', `${BASE_URL}/${id}`);
-            loadData();
-        } catch (e) {
-            alert('删除失败');
-        }
-    }
+function renderList(){
+    const kw=(searchInput.value||'').toLowerCase();
+    const list=allData.filter(i=>{
+        return (currentFilter==='all'||i.type===currentFilter)&&
+        ((i.title||'').toLowerCase().includes(kw)||(i.content||'').toLowerCase().includes(kw));
+    });
+    gridContainer.innerHTML='';
+    if(!list.length){gridContainer.innerHTML='<div class="loading">暂无内容</div>';return;}
+    list.forEach(i=>{
+        const div=document.createElement('div');
+        div.className='card';
+        div.onclick=()=>openDetail(i);
+        div.innerHTML=`
+        ${IS_ADMIN?`<div class="delete-btn" onclick="event.stopPropagation();deleteItem('${i.objectId}')">🗑️</div>`:''}
+        <span class="card-tag tag-${i.type}">${i.type}</span>
+        <div class="card-title">${i.title}</div>
+        <div class="card-content">${i.content}</div>
+        <div class="card-footer">
+        <span>${i.author||'匿名'}</span>
+        <span>${new Date(i.createdAt).toLocaleDateString()}</span>
+        </div>`;
+        gridContainer.appendChild(div);
+    });
+}
 
-    // 5. 渲染逻辑
-    function renderList() {
-        const container = document.getElementById('gridContainer');
-        const searchVal = (document.getElementById('searchInput').value || '').toLowerCase();
-        
-        const filtered = allData.filter(item => {
-            const matchType = currentFilter === 'all' || item.type === currentFilter;
-            const matchSearch = (item.title||'').toLowerCase().includes(searchVal) || (item.content||'').toLowerCase().includes(searchVal);
-            return matchType && matchSearch;
-        });
-
-        container.innerHTML = '';
-        if(filtered.length === 0) { 
-            container.innerHTML = `<div class="loading">暂无内容<br>点击右上角 + 发布</div>`; 
-            return; 
-        }
-
-        filtered.forEach(item => {
-            let tagColor = ''; 
-            if(item.type==='成交案例') tagColor='tag-成交案例';
-            if(item.type==='大单思路') tagColor='tag-大单思路';
-            
-            const div = document.createElement('div');
-            div.className = 'card';
-            div.onclick = (e) => { if(e.target.className !== 'delete-btn') openDetail(item); };
-            div.innerHTML = `
-                <div class="delete-btn" onclick="deleteItem('${item.objectId}')">🗑️</div>
-                <span class="card-tag ${tagColor} tag-${item.type}">${item.type}</span>
-                <div class="card-title">${item.title}</div>
-                <div class="card-content">${item.content}</div>
-                <div class="card-footer" style="margin-top:10px; font-size:12px; color:#999;">
-                    <span>👤 ${item.author||'匿名'}</span>
-                    <span>${item.createdAt.split(' ')[0]}</span>
-                </div>
-            `;
-            container.appendChild(div);
-        });
-    }
-
-    function openDetail(item) {
-        document.getElementById('detailTitle').innerText = item.title;
-        document.getElementById('detailContent').innerText = item.content;
-        openModal('detailModal');
-    }
-    
-    function setFilter(t, btn) { 
-        currentFilter = t; 
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); 
-        btn.classList.add('active'); 
-        renderList(); 
-    }
-    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-    // 启动
+async function saveData(){
+    await apiRequest('POST',BASE_URL,{
+        type:inputType.value,
+        title:inputTitle.value,
+        content:inputContent.value,
+        author:inputAuthor.value||'匿名'
+    });
+    closeModal('addModal');
     loadData();
+}
+
+async function deleteItem(id){
+    if(confirm('确定删除？')){
+        await apiRequest('DELETE',`${BASE_URL}/${id}`);
+        loadData();
+    }
+}
+
+function openDetail(i){
+    detailTitle.innerText=i.title;
+    detailContent.innerText=i.content;
+    openModal('detailModal');
+}
+
+function setFilter(t,btn){
+    currentFilter=t;
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderList();
+}
+function openModal(id){document.getElementById(id).style.display='flex';}
+function closeModal(id){document.getElementById(id).style.display='none';}
+
+loadData();
 </script>
+
 </body>
 </html>
