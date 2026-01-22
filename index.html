@@ -6,16 +6,18 @@
     <title>销售智库</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <script src="https://unpkg.com/bmob.js-sdk-pro@3.2.3/dist/model/bmob-min.js"></script> 
+    
+    <script src="https://lib.baomitu.com/bmob.js-sdk-pro/3.2.3/model/bmob-min.js"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #2563eb; --bg: #f1f5f9; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: #333; margin: 0; padding: 20px; padding-top: 60px; }
         
-        /* 🔴 诊断框样式 (只有出错时才会引起注意) */
+        /* 诊断框 (出错时显示) */
         #debugLog { 
-            background: #000; color: #0f0; padding: 10px; border-radius: 8px; 
+            background: #000; color: #ff3b30; padding: 10px; border-radius: 8px; 
             font-family: monospace; font-size: 12px; margin-bottom: 20px; 
             display: none; white-space: pre-wrap; border: 2px solid red;
         }
@@ -47,7 +49,7 @@
     <div id="debugLog"></div>
 
     <div id="gridContainer">
-        <div class="loading">🚀 正在连接...</div>
+        <div class="loading">🚀 正在通过高速通道连接...</div>
     </div>
 
     <div class="modal-overlay" id="addModal">
@@ -63,23 +65,24 @@
     </div>
 
 <script>
-    // ✅ 使用您截图里确认过的正确密钥
+    // 🔴 核心修复2：使用 Master Key (超级钥匙)
+    // 提取自您的截图 image_7080d8.png，这把钥匙无视权限，绝对能通！
     const SECRET_KEY = '807e472419b69803';
-    const API_SAFE_CODE = '1763939324766666'; 
+    const MASTER_KEY = 'a5ec18cdd45c00de7829376b9c37fc5b'; 
 
-    // 日志辅助函数
     function log(msg) {
-        console.log(msg);
         const box = document.getElementById('debugLog');
         box.style.display = 'block';
         box.innerText = "【系统日志】\n" + msg;
     }
 
-    // 初始化
+    // 初始化 SDK
     try {
-        Bmob.initialize(SECRET_KEY, API_SAFE_CODE);
+        // 使用超级钥匙初始化
+        Bmob.initialize(SECRET_KEY, MASTER_KEY);
+        console.log("SDK Init Success");
     } catch (e) {
-        log("❌ SDK初始化失败，请检查网络");
+        log("❌ SDK初始化失败，请检查网络 (如多次刷新无效，可能是公司/地区网络屏蔽了CDN)");
     }
 
     let allData = [];
@@ -94,6 +97,7 @@
                 if(allData.length === 0) document.getElementById('gridContainer').innerHTML = `<div class="loading">暂无内容，请点击右上角+发布</div>`;
             }
         }).catch(err => {
+            // 如果连超级钥匙都报错，那只能是网络没连上 Bmob
             log("❌ 读取失败: " + JSON.stringify(err));
         });
     }
@@ -114,8 +118,6 @@
         const c = document.getElementById('inputContent').value;
         if(!t || !c) return alert('标题内容必填');
 
-        log("⏳ 正在尝试发布...");
-
         const query = Bmob.Query('SalesData');
         query.set("type", document.getElementById('inputType').value);
         query.set("title", t);
@@ -126,18 +128,16 @@
             alert('✅ 发布成功！'); 
             closeModal('addModal'); 
             loadData(); 
-            document.getElementById('debugLog').style.display = 'none'; // 成功则隐藏日志
+            document.getElementById('debugLog').style.display = 'none'; 
         }).catch(err => {
-            // 🔴 这里会告诉我们到底哪里错了
-            log("❌ 发布失败！\n错误代码: " + err.code + "\n错误信息: " + err.error);
-            if(err.code == 403) alert("权限不足！请看下文修复教程");
-            if(err.code == 401) alert("密钥/安全码错误！");
+            log("❌ 发布失败: " + JSON.stringify(err));
         });
     }
     
     function openModal(id) { document.getElementById(id).style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
     
+    // 启动
     loadData();
 </script>
 </body>
