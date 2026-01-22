@@ -4,11 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>销售智库</title>
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <script src="https://unpkg.com/bmob.js-sdk-pro@3.2.3/dist/model/bmob-min.js"></script>
+    
+    <script src="https://registry.npmmirror.com/bmob.js-sdk-pro/3.2.3/files/dist/model/bmob-min.js"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
     <style>
+        /* 样式保持不变，为了节省篇幅我压缩了一下，功能完全一样 */
         :root { --primary: #2563eb; --bg: #f1f5f9; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: #333; margin: 0; padding: 20px; padding-top: 60px; }
@@ -42,10 +47,12 @@
     </style>
 </head>
 <body>
+
     <div class="search-box">
-        <input type="text" class="search-input" placeholder="🔍 搜问题..." id="searchInput" oninput="loadData()">
+        <input type="text" class="search-input" placeholder="🔍 搜问题、话术..." id="searchInput" oninput="loadData()">
         <button class="add-btn" onclick="openModal('addModal')">+</button>
     </div>
+
     <div class="filter-scroll">
         <div class="filter-btn active" onclick="setFilter('all', this)">全部</div>
         <div class="filter-btn" onclick="setFilter('疑虑解答', this)">❓ 疑虑解答</div>
@@ -53,17 +60,20 @@
         <div class="filter-btn" onclick="setFilter('大单思路', this)">💎 大单思路</div>
         <div class="filter-btn" onclick="setFilter('话术技巧', this)">🗣️ 话术技巧</div>
     </div>
-    <div id="gridContainer"><div class="loading">正在连接云端...</div></div>
+
+    <div id="gridContainer">
+        <div class="loading">正在极速连接云端...<br>(如果长时间不动，请检查Bmob后台是否保存了安全码)</div>
+    </div>
 
     <div class="modal-overlay" id="addModal">
         <div class="modal">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                <h2 style="margin:0; font-size:20px;">📝 发布经验</h2>
-                <span onclick="closeModal('addModal')" style="font-size:28px; color:#999;">&times;</span>
+                <h2 style="margin:0; font-size:20px;">📝 发布新经验</h2>
+                <span onclick="closeModal('addModal')" style="font-size:28px; color:#999; padding:0 10px;">&times;</span>
             </div>
             <select class="form-control" id="inputType"><option>疑虑解答</option><option>成交案例</option><option>大单思路</option><option>话术技巧</option></select>
-            <input type="text" class="form-control" id="inputTitle" placeholder="标题">
-            <textarea class="form-control" id="inputContent" placeholder="详细内容"></textarea>
+            <input type="text" class="form-control" id="inputTitle" placeholder="标题（如：客户嫌贵怎么回？）">
+            <textarea class="form-control" id="inputContent" placeholder="详细内容..."></textarea>
             <input type="text" class="form-control" id="inputAuthor" placeholder="分享人">
             <button class="btn-block" onclick="saveData()">发布</button>
         </div>
@@ -83,57 +93,132 @@
     </div>
 
 <script>
-    // 您提供的Bmob密钥已填入
+    // 🔴 必填：替换为你的 Bmob 密钥
     const SECRET_KEY = '807e472419b69803';
     const API_KEY    = '1763939324766666'; 
 
+    // 初始化 Bmob
     Bmob.initialize(SECRET_KEY, API_KEY);
-    let allData = []; let currentFilter = 'all';
+
+    let allData = [];
+    let currentFilter = 'all';
 
     function loadData() {
         const query = Bmob.Query("SalesData");
-        query.order("-createdAt"); query.limit(500);
-        query.find().then(res => { allData = Array.isArray(res) ? res : []; renderList(); })
-             .catch(err => { document.getElementById('gridContainer').innerHTML = `<div class="loading">❌ 连接失败，请检查Bmob后台</div>`; });
+        query.order("-createdAt");
+        query.limit(500);
+        query.find().then(res => {
+            // 如果成功连接
+            if(Array.isArray(res)){
+                allData = res;
+                renderList();
+            }
+        }).catch(err => {
+            // 如果连接失败，打印错误
+            console.error(err);
+            document.getElementById('gridContainer').innerHTML = `<div class="loading" style="color:red">❌ 连接失败<br>请检查浏览器控制台(Console)获取详细错误</div>`;
+        });
     }
+
+    // 渲染列表
     function renderList() {
         const container = document.getElementById('gridContainer');
         const searchVal = document.getElementById('searchInput').value.toLowerCase();
+        
         const filtered = allData.filter(item => {
             const matchType = currentFilter === 'all' || item.type === currentFilter;
             const matchSearch = (item.title||'').toLowerCase().includes(searchVal) || (item.content||'').toLowerCase().includes(searchVal);
             return matchType && matchSearch;
         });
+
         container.innerHTML = '';
-        if(filtered.length === 0) { container.innerHTML = `<div style="text-align:center; padding:60px; color:#cbd5e1;">暂无内容<br>点击右上角 + 发布</div>`; return; }
+        if(filtered.length === 0) {
+            container.innerHTML = `<div style="text-align:center; padding:60px; color:#cbd5e1;">暂无内容<br>点击右上角 + 发布</div>`;
+            return;
+        }
+
         filtered.forEach(item => {
+            const dateStr = item.createdAt.split(' ')[0];
             let tagColor = ''; 
-            if(item.type==='成交案例') tagColor='tag-成交案例'; if(item.type==='大单思路') tagColor='tag-大单思路';
-            if(item.type==='疑虑解答') tagColor='tag-疑虑解答'; if(item.type==='话术技巧') tagColor='tag-话术技巧';
-            const div = document.createElement('div'); div.className = 'card';
-            div.onclick = (e) => { if(e.target.className !== 'delete-btn') openDetail(item); };
-            div.innerHTML = `<div class="delete-btn" onclick="deleteItem('${item.objectId}')">🗑️</div><span class="card-tag ${tagColor}">${item.type}</span><div class="card-title">${item.title}</div><div class="card-content">${item.content}</div><div class="card-footer"><span>👤 ${item.author||'匿名'}</span><span>${item.createdAt.split(' ')[0]}</span></div>`;
+            if(item.type==='成交案例') tagColor='tag-成交案例';
+            if(item.type==='大单思路') tagColor='tag-大单思路';
+            if(item.type==='疑虑解答') tagColor='tag-疑虑解答';
+            if(item.type==='话术技巧') tagColor='tag-话术技巧';
+            
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.onclick = (e) => {
+                if(e.target.className !== 'delete-btn') openDetail(item);
+            };
+            
+            div.innerHTML = `
+                <div class="delete-btn" onclick="deleteItem('${item.objectId}')">🗑️</div>
+                <span class="card-tag ${tagColor}">${item.type}</span>
+                <div class="card-title">${item.title}</div>
+                <div class="card-content">${item.content}</div>
+                <div class="card-footer">
+                    <span>👤 ${item.author||'匿名'}</span>
+                    <span>${dateStr}</span>
+                </div>
+            `;
             container.appendChild(div);
         });
     }
+
     function saveData() {
-        const t = document.getElementById('inputTitle').value, c = document.getElementById('inputContent').value;
-        if(!t || !c) return alert('标题内容必填');
-        const q = Bmob.Query('SalesData');
-        q.set("type", document.getElementById('inputType').value); q.set("title", t); q.set("content", c); q.set("author", document.getElementById('inputAuthor').value || "匿名");
-        q.save().then(res => { alert('发布成功'); closeModal('addModal'); document.getElementById('inputTitle').value=''; document.getElementById('inputContent').value=''; loadData(); }).catch(err => alert('失败'));
+        const t = document.getElementById('inputTitle').value;
+        const c = document.getElementById('inputContent').value;
+        if(!t || !c) return alert('标题和内容必填');
+
+        const query = Bmob.Query('SalesData');
+        query.set("type", document.getElementById('inputType').value);
+        query.set("title", t);
+        query.set("content", c);
+        query.set("author", document.getElementById('inputAuthor').value || "匿名");
+        
+        query.save().then(res => {
+            alert('发布成功！');
+            closeModal('addModal');
+            document.getElementById('inputTitle').value = '';
+            document.getElementById('inputContent').value = '';
+            loadData();
+        }).catch(err => {
+            console.error(err);
+            alert('发布失败：' + (err.error || '网络错误'));
+        });
     }
-    function deleteItem(id) { if(confirm('确定删除?')) Bmob.Query('SalesData').destroy(id).then(()=>loadData()); }
+
+    function deleteItem(id) {
+        if(!confirm('确定要删除吗？')) return;
+        const query = Bmob.Query('SalesData');
+        query.destroy(id).then(res => loadData()).catch(err => alert('删除失败'));
+    }
+
     function openDetail(item) {
-        const t = document.getElementById('detailTag'); t.innerText = item.type; t.className = `card-tag tag-${item.type}`;
-        document.getElementById('detailTitle').innerText = item.title; document.getElementById('detailAuthor').innerText = item.author||'匿名';
-        document.getElementById('detailTime').innerText = item.createdAt; document.getElementById('detailContent').innerText = item.content;
+        const t = document.getElementById('detailTag');
+        t.innerText = item.type;
+        t.className = `card-tag tag-${item.type}`;
+        document.getElementById('detailTitle').innerText = item.title;
+        document.getElementById('detailAuthor').innerText = item.author || '匿名';
+        document.getElementById('detailTime').innerText = item.createdAt;
+        document.getElementById('detailContent').innerText = item.content;
         openModal('detailModal');
     }
-    function copyDetail() { navigator.clipboard.writeText(document.getElementById('detailContent').innerText).then(()=>alert('已复制')); }
-    function setFilter(t, b) { currentFilter = t; document.querySelectorAll('.filter-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); renderList(); }
+
+    function copyDetail() {
+        const text = document.getElementById('detailContent').innerText;
+        navigator.clipboard.writeText(text).then(() => alert('已复制'));
+    }
+
+    function setFilter(type, btn) {
+        currentFilter = type;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderList();
+    }
     function openModal(id) { document.getElementById(id).style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
     loadData();
 </script>
 </body>
