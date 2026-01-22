@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>发布内容</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{font-family:sans-serif;background:#f1f5f9;padding:20px}
+input,textarea,select,button{width:100%;padding:12px;margin:10px 0}
+button{background:#2563eb;color:#fff;border:none;border-radius:8px}
+</style>
+</head>
+<body>
+
+<h3>发布内容</h3>
+
+<select id="type">
+  <option>小单成交</option>
+  <option>复购成交</option>
+  <option>大单客户</option>
+  <option>顾虑解决</option>
+</select>
+
+<input id="title" placeholder="标题">
+<textarea id="content" placeholder="内容"></textarea>
+<button onclick="publish()">发布</button>
+
+<script>
+if(!localStorage.getItem('admin_login') ||
+   Date.now()>localStorage.getItem('admin_expire')){
+  location.href='login.html';
+}
+
+const APP_ID = '711a5754d90f2ed8dcafc8ebb1b640cd';
+const REST_KEY = '440f810266f7e9b5a3e50b59480d7e2e';
+
+function publish(){
+  fetch('https://api.bmobcloud.com/1/classes/SalesData',{
+    method:'POST',
+    headers:{
+      'X-Bmob-Application-Id':APP_ID,
+      'X-Bmob-REST-API-Key':REST_KEY,
+      'Content-Type':'application/json'
+    },
+    body:JSON.stringify({
+      type:type.value,
+      title:title.value,
+      content:content.value,
+      author:'管理员'
+    })
+  }).then(()=>{
+    alert('发布成功');
+    title.value='';
+    content.value='';
+  });
+}
+</script>
+
+</body>
+</html>
