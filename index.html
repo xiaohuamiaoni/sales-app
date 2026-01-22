@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <title>销售智库 · 团队版</title>
 
 <style>
-:root { --primary:#2563eb; --bg:#f1f5f9; }
+:root{--primary:#2563eb;--bg:#f1f5f9;}
 *{box-sizing:border-box;}
 body{
     margin:0;padding:70px 20px 20px;
@@ -17,23 +17,24 @@ body{
     position:fixed;top:0;left:0;right:0;z-index:50;
     background:rgba(255,255,255,.95);
     backdrop-filter:blur(10px);
-    padding:12px 20px;display:flex;gap:10px;
+    padding:12px 20px;
+    display:flex;gap:10px;
     box-shadow:0 4px 20px rgba(0,0,0,.05);
 }
 .search-input{
     flex:1;border:none;background:#f1f5f9;
     padding:12px 16px;border-radius:20px;
 }
+.admin-btn{
+    border:none;background:#e2e8f0;
+    border-radius:20px;padding:10px 14px;
+    font-size:13px;
+}
 .add-btn{
     width:40px;height:40px;border-radius:50%;
     border:none;background:var(--primary);
     color:#fff;font-size:22px;
     display:none;
-}
-.admin-btn{
-    border:none;background:#e2e8f0;
-    border-radius:20px;padding:10px 14px;
-    font-size:13px;
 }
 .filter-scroll{
     display:flex;gap:10px;overflow-x:auto;
@@ -45,8 +46,7 @@ body{
     font-size:13px;white-space:nowrap;
 }
 .filter-btn.active{
-    background:var(--primary);color:#fff;
-    border-color:var(--primary);
+    background:var(--primary);color:#fff;border-color:var(--primary);
 }
 .card{
     background:#fff;border-radius:16px;
@@ -69,12 +69,9 @@ body{
 .tag-话术技巧{background:#dbeafe;color:#1e40af;}
 .card-title{font-size:17px;font-weight:700;margin-bottom:6px;}
 .card-content{
-    font-size:14px;color:#64748b;
-    line-height:1.6;
-    display:-webkit-box;
-    -webkit-line-clamp:2;
-    -webkit-box-orient:vertical;
-    overflow:hidden;
+    font-size:14px;color:#64748b;line-height:1.6;
+    display:-webkit-box;-webkit-line-clamp:2;
+    -webkit-box-orient:vertical;overflow:hidden;
 }
 .card-footer{
     margin-top:10px;font-size:12px;color:#94a3b8;
@@ -109,8 +106,8 @@ textarea.form-control{height:200px;}
 <body>
 
 <div class="search-box">
-    <input id="searchInput" class="search-input" placeholder="🔍 搜问题…" oninput="renderList()" />
-    <button class="admin-btn" onclick="adminLogin()">🔐 管理</button>
+    <input id="searchInput" class="search-input" placeholder="🔍 搜问题…" oninput="renderList()">
+    <button class="admin-btn" onclick="openModal('loginModal')">🔐 管理</button>
     <button id="addBtn" class="add-btn" onclick="openModal('addModal')">+</button>
 </div>
 
@@ -124,6 +121,17 @@ textarea.form-control{height:200px;}
 
 <div id="gridContainer"><div class="loading">加载中…</div></div>
 
+<!-- 管理员登录 -->
+<div class="modal-overlay" id="loginModal">
+<div class="modal">
+<h2>管理员登录</h2>
+<input id="adminPwd" type="password" class="form-control" placeholder="请输入管理员密码">
+<button class="btn-block" onclick="adminLogin()">登录</button>
+<button class="btn-block" style="background:#e2e8f0;color:#333;margin-top:10px;"
+onclick="closeModal('loginModal')">取消</button>
+</div>
+</div>
+
 <!-- 发布 -->
 <div class="modal-overlay" id="addModal">
 <div class="modal">
@@ -135,10 +143,11 @@ textarea.form-control{height:200px;}
 <option>话术技巧</option>
 </select>
 <input id="inputTitle" class="form-control" placeholder="标题">
-<textarea id="inputContent" class="form-control" placeholder="内容"></textarea>
+<textarea id="inputContent" class="form-control"></textarea>
 <input id="inputAuthor" class="form-control" placeholder="分享人">
 <button class="btn-block" onclick="saveData()">发布</button>
-<button onclick="closeModal('addModal')" class="btn-block" style="background:#e2e8f0;color:#333;margin-top:10px;">关闭</button>
+<button class="btn-block" style="background:#e2e8f0;color:#333;margin-top:10px;"
+onclick="closeModal('addModal')">关闭</button>
 </div>
 </div>
 
@@ -152,17 +161,14 @@ textarea.form-control{height:200px;}
 </div>
 
 <script>
-/* ====== 配置 ====== */
 const APP_ID='711a5754d90f2ed8dcafc8ebb1b640cd';
 const REST_KEY='440f810266f7e9b5a3e50b59480d7e2e';
 const BASE_URL='https://api.bmobcloud.com/1/classes/SalesData';
 const ADMIN_PASSWORD='123456';
 
-/* ====== 权限 ====== */
-const IS_ADMIN = localStorage.getItem('isAdmin')==='1';
+const IS_ADMIN=localStorage.getItem('isAdmin')==='1';
 if(IS_ADMIN) document.getElementById('addBtn').style.display='flex';
 
-/* ====== 模板 ====== */
 const templates={
 '疑虑解答':`客户原话：
 核心担心：
@@ -185,20 +191,18 @@ const templates={
 };
 
 function fillTemplate(){
-    document.getElementById('inputContent').value=
-    templates[document.getElementById('inputType').value];
+    inputContent.value=templates[inputType.value];
 }
 
-/* ====== 管理员 ====== */
 function adminLogin(){
-    const pwd=prompt('请输入管理员密码');
-    if(pwd===ADMIN_PASSWORD){
+    if(adminPwd.value===ADMIN_PASSWORD){
         localStorage.setItem('isAdmin','1');
         location.reload();
-    }else alert('密码错误');
+    }else{
+        alert('密码错误');
+    }
 }
 
-/* ====== 网络 ====== */
 async function apiRequest(method,url,body){
     const res=await fetch(url,{
         method,
@@ -212,7 +216,6 @@ async function apiRequest(method,url,body){
     return res.json();
 }
 
-/* ====== 数据 ====== */
 let allData=[],currentFilter='all';
 
 async function loadData(){
@@ -223,10 +226,11 @@ async function loadData(){
 
 function renderList(){
     const kw=(searchInput.value||'').toLowerCase();
-    const list=allData.filter(i=>{
-        return (currentFilter==='all'||i.type===currentFilter)&&
-        ((i.title||'').toLowerCase().includes(kw)||(i.content||'').toLowerCase().includes(kw));
-    });
+    const list=allData.filter(i=>
+        (currentFilter==='all'||i.type===currentFilter) &&
+        ((i.title||'').toLowerCase().includes(kw) ||
+         (i.content||'').toLowerCase().includes(kw))
+    );
     gridContainer.innerHTML='';
     if(!list.length){gridContainer.innerHTML='<div class="loading">暂无内容</div>';return;}
     list.forEach(i=>{
@@ -276,6 +280,7 @@ function setFilter(t,btn){
     btn.classList.add('active');
     renderList();
 }
+
 function openModal(id){document.getElementById(id).style.display='flex';}
 function closeModal(id){document.getElementById(id).style.display='none';}
 
