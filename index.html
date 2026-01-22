@@ -4,134 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>销售智库</title>
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="format-detection" content="telephone=no">
-    
-    <script src="https://cdn.jsdelivr.net/npm/bmob.js-sdk-pro@3.2.3/dist/model/bmob-min.js"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
-        /* ================== 样式区域 ================== */
-        :root { --primary: #2563eb; --bg: #f1f5f9; --card-bg: #fff; }
+        /* 样式区保持不变 */
+        :root { --primary: #2563eb; --bg: #f1f5f9; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg); color: #333; margin: 0; padding: 20px; padding-top: 70px; /* 留出顶部搜索栏高度 */
-        }
-        
-        /* 1. 顶部搜索栏 (吸顶) */
-        .search-box { 
-            position: fixed; top: 0; left: 0; right: 0; z-index: 50; 
-            background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
-            padding: 12px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-            display: flex; gap: 12px; align-items: center;
-        }
-        .search-input { 
-            flex: 1; border: none; background: #f1f5f9; padding: 12px 16px; 
-            border-radius: 20px; font-size: 15px; color: #333;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: #333; margin: 0; padding: 20px; padding-top: 70px; }
+        .search-box { position: fixed; top: 0; left: 0; right: 0; z-index: 50; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 12px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); display: flex; gap: 12px; align-items: center; }
+        .search-input { flex: 1; border: none; background: #f1f5f9; padding: 12px 16px; border-radius: 20px; font-size: 15px; }
         .search-input:focus { outline: 2px solid var(--primary); background: #fff; }
-        
-        .add-btn {
-            background: var(--primary); color: #fff; border: none; width: 40px; height: 40px; 
-            border-radius: 50%; font-size: 26px; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3); transition: transform 0.1s;
-        }
-        .add-btn:active { transform: scale(0.9); }
-
-        /* 2. 诊断信息框 (仅在出错时显示) */
-        #debugLog { 
-            background: #1e1e1e; color: #ff6b6b; padding: 15px; border-radius: 8px; 
-            font-family: monospace; font-size: 13px; margin-bottom: 20px; 
-            display: none; white-space: pre-wrap; border-left: 5px solid #ff4757;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
-
-        /* 3. 分类筛选栏 */
-        .filter-scroll { 
-            display: flex; gap: 10px; overflow-x: auto; padding: 5px 0 15px 0;
-            -webkit-overflow-scrolling: touch; /* iOS顺滑滚动 */
-        }
-        .filter-scroll::-webkit-scrollbar { display: none; } /* 隐藏滚动条 */
-        .filter-btn { 
-            white-space: nowrap; padding: 8px 16px; border-radius: 20px; font-size: 13px;
-            background: #fff; border: 1px solid #e2e8f0; color: #64748b; transition: 0.2s;
-        }
-        .filter-btn.active { 
-            background: var(--primary); color: #fff; border-color: var(--primary); 
-            font-weight: 600; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
-        }
-
-        /* 4. 内容卡片 */
-        .card { 
-            background: #fff; border-radius: 16px; padding: 18px; margin-bottom: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.02); position: relative; transition: transform 0.1s;
-            border: 1px solid rgba(0,0,0,0.02);
-        }
-        .card:active { transform: scale(0.98); background: #fafafa; }
-        
-        .delete-btn {
-            position: absolute; top: 15px; right: 15px; color: #cbd5e1; 
-            font-size: 16px; padding: 5px; z-index: 2;
-        }
-        
-        .card-tag { 
-            font-size: 11px; padding: 4px 10px; border-radius: 6px; margin-bottom: 10px; 
-            display: inline-block; font-weight: 700; letter-spacing: 0.5px;
-        }
-        .tag-成交案例 { background: #dcfce7; color: #166534; }
-        .tag-大单思路 { background: #fef9c3; color: #854d0e; }
-        .tag-疑虑解答 { background: #fee2e2; color: #991b1b; }
-        .tag-话术技巧 { background: #dbeafe; color: #1e40af; }
-
-        .card-title { font-size: 17px; font-weight: 700; color: #1e293b; margin-bottom: 8px; line-height: 1.4; }
+        .add-btn { background: var(--primary); color: #fff; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .filter-scroll { display: flex; gap: 10px; overflow-x: auto; padding: 5px 0 15px 0; -webkit-overflow-scrolling: touch; }
+        .filter-scroll::-webkit-scrollbar { display: none; }
+        .filter-btn { white-space: nowrap; padding: 8px 16px; border-radius: 20px; font-size: 13px; background: #fff; border: 1px solid #e2e8f0; color: #64748b; transition: 0.2s; }
+        .filter-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); font-weight: 600; }
+        .card { background: #fff; border-radius: 16px; padding: 18px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); position: relative; }
+        .delete-btn { position: absolute; top: 15px; right: 15px; color: #cbd5e1; font-size: 16px; padding: 5px; z-index: 2; }
+        .card-tag { font-size: 11px; padding: 4px 10px; border-radius: 6px; margin-bottom: 10px; display: inline-block; font-weight: 700; }
+        .tag-成交案例 { background: #dcfce7; color: #166534; } .tag-大单思路 { background: #fef9c3; color: #854d0e; } .tag-疑虑解答 { background: #fee2e2; color: #991b1b; } .tag-话术技巧 { background: #dbeafe; color: #1e40af; }
+        .card-title { font-size: 17px; font-weight: 700; color: #1e293b; margin-bottom: 8px; }
         .card-content { font-size: 14px; color: #64748b; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.6; }
         .card-footer { margin-top: 12px; font-size: 12px; color: #94a3b8; display: flex; justify-content: space-between; border-top: 1px solid #f1f5f9; padding-top: 10px;}
-
-        /* 5. 弹窗样式 */
-        .modal-overlay { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.6); z-index: 100; display: none; 
-            align-items: flex-end; /* 底部弹出 */
-        }
-        .modal { 
-            background: #fff; width: 100%; height: 85vh; 
-            border-radius: 24px 24px 0 0; padding: 25px; overflow-y: auto; 
-            animation: slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-        }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-        .form-control { 
-            width: 100%; padding: 14px; margin-bottom: 15px; 
-            border: 1px solid #e2e8f0; border-radius: 12px; font-size: 16px; 
-            background: #f8fafc; transition: 0.2s;
-        }
-        .form-control:focus { background: #fff; border-color: var(--primary); outline: none; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 100; display: none; align-items: flex-end; }
+        .modal { background: #fff; width: 100%; height: 85vh; border-radius: 24px 24px 0 0; padding: 25px; overflow-y: auto; }
+        .form-control { width: 100%; padding: 14px; margin-bottom: 15px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 16px; background: #f8fafc; }
         textarea.form-control { height: 180px; resize: none; line-height: 1.6; }
-        
-        .btn-block { 
-            width: 100%; padding: 16px; background: var(--primary); color: #fff; 
-            border:none; border-radius: 12px; font-size: 16px; font-weight: 700; 
-            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
-        }
-        .btn-close { width:100%; padding:15px; margin-top:10px; background:none; border:none; color:#94a3b8; font-size:14px; }
-
-        .detail-content { font-size: 17px; line-height: 1.8; color: #333; white-space: pre-wrap; padding-bottom: 80px; }
+        .btn-block { width: 100%; padding: 16px; background: var(--primary); color: #fff; border:none; border-radius: 12px; font-size: 16px; font-weight: 700; }
         .loading { text-align: center; padding: 60px 20px; color: #94a3b8; font-size: 14px; }
+        #statusLog { color: red; font-size: 12px; text-align: center; margin-top: 10px; white-space: pre-wrap;}
     </style>
 </head>
 <body>
-
     <div class="search-box">
-        <input type="text" class="search-input" placeholder="🔍 搜问题、话术..." id="searchInput" oninput="loadData()">
+        <input type="text" class="search-input" placeholder="🔍 搜问题..." id="searchInput" oninput="renderList()">
         <button class="add-btn" onclick="openModal('addModal')">+</button>
     </div>
-
-    <div id="debugLog"></div>
 
     <div class="filter-scroll">
         <div class="filter-btn active" onclick="setFilter('all', this)">全部</div>
@@ -142,109 +52,116 @@
     </div>
 
     <div id="gridContainer">
-        <div class="loading">
-            🚀 正在连接云端...<br>
-            <span style="font-size:12px; opacity:0.7">正在尝试通过 jsDelivr 线路加载</span>
-        </div>
+        <div class="loading">🚀 正在直连云端...</div>
     </div>
+    <div id="statusLog"></div>
 
     <div class="modal-overlay" id="addModal">
         <div class="modal">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
-                <h2 style="margin:0; font-size:22px;">📝 发布新经验</h2>
-                <span onclick="closeModal('addModal')" style="font-size:28px; color:#cbd5e1; padding:5px;">&times;</span>
-            </div>
-            
-            <select class="form-control" id="inputType">
-                <option>疑虑解答</option>
-                <option>成交案例</option>
-                <option>大单思路</option>
-                <option>话术技巧</option>
-            </select>
-            
-            <input type="text" class="form-control" id="inputTitle" placeholder="标题（例如：客户嫌贵怎么回？）">
-            <textarea class="form-control" id="inputContent" placeholder="在此输入详细的内容..."></textarea>
-            <input type="text" class="form-control" id="inputAuthor" placeholder="分享人姓名">
-            
-            <button class="btn-block" onclick="saveData()">立即发布</button>
-            <button class="btn-close" onclick="closeModal('addModal')">取消</button>
+            <h2 style="margin:0 0 25px 0;">📝 发布</h2>
+            <select class="form-control" id="inputType"><option>疑虑解答</option><option>成交案例</option><option>大单思路</option><option>话术技巧</option></select>
+            <input type="text" class="form-control" id="inputTitle" placeholder="标题">
+            <textarea class="form-control" id="inputContent" placeholder="内容"></textarea>
+            <input type="text" class="form-control" id="inputAuthor" placeholder="分享人">
+            <button class="btn-block" onclick="saveData()">发布</button>
+            <button onclick="closeModal('addModal')" style="width:100%; padding:15px; margin-top:10px; border:none; background:none; color:#999">关闭</button>
         </div>
     </div>
 
     <div class="modal-overlay" id="detailModal">
         <div class="modal">
-            <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
-                <span class="card-tag" id="detailTag">类型</span>
-                <span onclick="closeModal('detailModal')" style="font-size:28px; color:#cbd5e1;">&times;</span>
-            </div>
-            
-            <h2 id="detailTitle" style="margin:0 0 15px 0; font-size:22px; line-height:1.4;"></h2>
-            
-            <div style="font-size:13px; color:#94a3b8; border-bottom:1px solid #f1f5f9; padding-bottom:15px; margin-bottom:25px; display:flex; gap:15px;">
-                <span>👤 <span id="detailAuthor"></span></span>
-                <span>🕒 <span id="detailTime"></span></span>
-            </div>
-            
-            <div id="detailContent" class="detail-content"></div>
-            
-            <div style="position:fixed; bottom:30px; left:25px; right:25px;">
-                <button class="btn-block" onclick="copyDetail()">📋 一键复制内容</button>
-            </div>
+            <h2 id="detailTitle" style="margin:0 0 15px 0;"></h2>
+            <div id="detailContent" class="detail-content" style="font-size:16px; line-height:1.6; color:#333; margin-bottom:30px; white-space: pre-wrap;"></div>
+            <button class="btn-block" onclick="closeModal('detailModal')">关闭</button>
         </div>
     </div>
 
 <script>
-    // ==========================================
-    // 🔑 核心配置区 (已确认无误)
-    // ==========================================
-    const SECRET_KEY = '807e472419b69803';
-    // 使用 Master Key (超级钥匙) 来跳过权限检查
-    const MASTER_KEY = 'a5ec18cdd45c00de7829376b9c37fc5b'; 
-
-    // 日志辅助函数 (出错时显示红框)
-    function log(msg) {
-        console.error(msg);
-        const box = document.getElementById('debugLog');
-        box.style.display = 'block';
-        box.innerText = "【系统诊断日志】\n" + msg;
-    }
-
-    // 1. 初始化 Bmob
-    try {
-        // 使用超级钥匙初始化，确保权限畅通
-        Bmob.initialize(SECRET_KEY, MASTER_KEY);
-        console.log("Bmob SDK init success");
-    } catch (e) {
-        // 如果这里报错，说明 SDK 文件根本没加载下来（网络问题）
-        log("❌ SDK加载失败！\n请检查网络连接，或者您所在网络屏蔽了 jsDelivr CDN。\n\n解决方法：尝试切换手机4G/5G网络访问。");
-    }
+    // 🔑 你的钥匙 (从截图 image_7080d8.png 提取)
+    const APP_ID = '711a5754d90f2ed8dcafc8ebb1b640cd';
+    const REST_KEY = '440f810266f7e9b5a3e50b59480d7e2e';
+    
+    // API 基础地址
+    const BASE_URL = 'https://api.bmobcloud.com/1/classes/SalesData';
 
     let allData = [];
     let currentFilter = 'all';
 
-    // 2. 加载数据
-    function loadData() {
-        // 只有 Bmob 定义了才能跑
-        if (typeof Bmob === 'undefined') return;
+    // 1. 原生网络请求函数 (不依赖任何 SDK)
+    async function apiRequest(method, url, body = null) {
+        const headers = {
+            'X-Bmob-Application-Id': APP_ID,
+            'X-Bmob-REST-API-Key': REST_KEY,
+            'Content-Type': 'application/json'
+        };
+        const options = { method, headers };
+        if (body) options.body = JSON.stringify(body);
 
-        const query = Bmob.Query("SalesData");
-        query.order("-createdAt");
-        query.limit(500);
-        
-        query.find().then(res => {
-            if(Array.isArray(res)){ 
-                allData = res; 
-                renderList(); 
+        try {
+            const response = await fetch(url, options);
+            if (!response.ok) {
+                const errText = await response.text();
+                throw new Error(`请求失败: ${response.status} - ${errText}`);
             }
-        }).catch(err => {
-            log("❌ 连接云端失败: " + JSON.stringify(err));
-        });
+            return await response.json();
+        } catch (error) {
+            document.getElementById('statusLog').innerText = "❌ 网络错误: " + error.message;
+            throw error;
+        }
     }
 
-    // 3. 渲染列表
+    // 2. 加载数据
+    async function loadData() {
+        try {
+            // 按时间倒序取500条
+            const res = await apiRequest('GET', `${BASE_URL}?order=-createdAt&limit=500`);
+            allData = res.results || [];
+            renderList();
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    // 3. 发布数据
+    async function saveData() {
+        const title = document.getElementById('inputTitle').value;
+        const content = document.getElementById('inputContent').value;
+        if(!title || !content) return alert('请填写完整');
+
+        const data = {
+            type: document.getElementById('inputType').value,
+            title: title,
+            content: content,
+            author: document.getElementById('inputAuthor').value || "匿名"
+        };
+
+        try {
+            await apiRequest('POST', BASE_URL, data);
+            alert('✅ 发布成功！');
+            closeModal('addModal');
+            document.getElementById('inputTitle').value = '';
+            document.getElementById('inputContent').value = '';
+            loadData(); // 刷新
+        } catch (e) {
+            alert('发布失败，请检查网络');
+        }
+    }
+
+    // 4. 删除数据
+    async function deleteItem(id) {
+        if(!confirm('确定删除?')) return;
+        try {
+            await apiRequest('DELETE', `${BASE_URL}/${id}`);
+            loadData();
+        } catch (e) {
+            alert('删除失败');
+        }
+    }
+
+    // 5. 渲染逻辑
     function renderList() {
         const container = document.getElementById('gridContainer');
-        const searchVal = document.getElementById('searchInput').value.toLowerCase();
+        const searchVal = (document.getElementById('searchInput').value || '').toLowerCase();
         
         const filtered = allData.filter(item => {
             const matchType = currentFilter === 'all' || item.type === currentFilter;
@@ -254,98 +171,47 @@
 
         container.innerHTML = '';
         if(filtered.length === 0) { 
-            container.innerHTML = `<div class="loading">暂无内容<br>点击右上角 + 号发布第一条经验</div>`; 
+            container.innerHTML = `<div class="loading">暂无内容<br>点击右上角 + 发布</div>`; 
             return; 
         }
 
         filtered.forEach(item => {
-            const dateStr = item.createdAt ? item.createdAt.split(' ')[0] : '刚刚';
             let tagColor = ''; 
             if(item.type==='成交案例') tagColor='tag-成交案例';
             if(item.type==='大单思路') tagColor='tag-大单思路';
-            if(item.type==='疑虑解答') tagColor='tag-疑虑解答';
-            if(item.type==='话术技巧') tagColor='tag-话术技巧';
             
-            const div = document.createElement('div'); 
+            const div = document.createElement('div');
             div.className = 'card';
-            div.onclick = (e) => { 
-                if(e.target.className !== 'delete-btn') openDetail(item); 
-            };
-            
+            div.onclick = (e) => { if(e.target.className !== 'delete-btn') openDetail(item); };
             div.innerHTML = `
                 <div class="delete-btn" onclick="deleteItem('${item.objectId}')">🗑️</div>
-                <span class="card-tag ${tagColor}">${item.type}</span>
+                <span class="card-tag ${tagColor} tag-${item.type}">${item.type}</span>
                 <div class="card-title">${item.title}</div>
                 <div class="card-content">${item.content}</div>
-                <div class="card-footer">
+                <div class="card-footer" style="margin-top:10px; font-size:12px; color:#999;">
                     <span>👤 ${item.author||'匿名'}</span>
-                    <span>${dateStr}</span>
+                    <span>${item.createdAt.split(' ')[0]}</span>
                 </div>
             `;
             container.appendChild(div);
         });
     }
-    
-    // 4. 保存数据
-    function saveData() {
-        const t = document.getElementById('inputTitle').value;
-        const c = document.getElementById('inputContent').value;
-        if(!t || !c) return alert('标题和内容不能为空');
 
-        const query = Bmob.Query('SalesData');
-        query.set("type", document.getElementById('inputType').value);
-        query.set("title", t);
-        query.set("content", c);
-        query.set("author", document.getElementById('inputAuthor').value || "匿名");
-        
-        query.save().then(res => { 
-            alert('✅ 发布成功！'); 
-            closeModal('addModal'); 
-            document.getElementById('inputTitle').value=''; 
-            document.getElementById('inputContent').value=''; 
-            // 成功后隐藏可能存在的错误框
-            document.getElementById('debugLog').style.display = 'none';
-            loadData(); 
-        }).catch(err => {
-            alert('发布失败');
-            log("❌ 发布失败详情: " + JSON.stringify(err));
-        });
-    }
-    
-    // 5. 其他功能
-    function deleteItem(id) { 
-        if(confirm('确定要删除这条内容吗？')) {
-            Bmob.Query('SalesData').destroy(id).then(()=>loadData()); 
-        }
-    }
-    
     function openDetail(item) {
-        const t = document.getElementById('detailTag'); 
-        t.innerText = item.type; 
-        t.className = `card-tag tag-${item.type}`;
-        
-        document.getElementById('detailTitle').innerText = item.title; 
-        document.getElementById('detailAuthor').innerText = item.author||'匿名';
-        document.getElementById('detailTime').innerText = item.createdAt; 
+        document.getElementById('detailTitle').innerText = item.title;
         document.getElementById('detailContent').innerText = item.content;
         openModal('detailModal');
     }
     
-    function copyDetail() { 
-        const text = document.getElementById('detailContent').innerText;
-        navigator.clipboard.writeText(text).then(()=>alert('✅ 已复制到剪贴板')); 
-    }
-    
-    function setFilter(type, btn) { 
-        currentFilter = type; 
+    function setFilter(t, btn) { 
+        currentFilter = t; 
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); 
         btn.classList.add('active'); 
         renderList(); 
     }
-    
     function openModal(id) { document.getElementById(id).style.display = 'flex'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-    
+
     // 启动
     loadData();
 </script>
