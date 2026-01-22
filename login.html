@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>管理员登录</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{display:flex;justify-content:center;align-items:center;height:100vh;background:#f1f5f9}
+.box{background:#fff;padding:30px;border-radius:16px;width:90%;max-width:360px}
+input,button{width:100%;padding:12px;margin-top:12px}
+button{background:#2563eb;color:#fff;border:none;border-radius:8px}
+</style>
+</head>
+<body>
+
+<div class="box">
+  <h3>管理员登录</h3>
+  <input id="user" placeholder="账号">
+  <input id="pass" type="password" placeholder="密码">
+  <button onclick="login()">登录</button>
+  <p id="msg" style="color:red"></p>
+</div>
+
+<script>
+const APP_ID = '711a5754d90f2ed8dcafc8ebb1b640cd';
+const REST_KEY = '440f810266f7e9b5a3e50b59480d7e2e';
+
+function login(){
+  fetch(`https://api.bmobcloud.com/1/classes/AdminUser?where=`+
+    encodeURIComponent(JSON.stringify({
+      username:user.value,
+      password:pass.value,
+      enabled:true
+    })),{
+    headers:{
+      'X-Bmob-Application-Id':APP_ID,
+      'X-Bmob-REST-API-Key':REST_KEY
+    }
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    if(d.results.length){
+      localStorage.setItem('admin_login','1');
+      localStorage.setItem('admin_expire',Date.now()+7*24*60*60*1000);
+      location.href='publish.html';
+    }else{
+      msg.innerText='账号或密码错误';
+    }
+  });
+}
+</script>
+
+</body>
+</html>
