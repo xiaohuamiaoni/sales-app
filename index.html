@@ -2,47 +2,138 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>销售智库</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
-body{font-family:sans-serif;background:#f1f5f9;margin:0;padding:20px}
-.card{background:#fff;padding:16px;border-radius:12px;margin-bottom:12px}
-header{display:flex;justify-content:space-between;align-items:center}
-a{color:#2563eb;text-decoration:none;font-weight:bold}
+:root { --primary:#2563eb; --bg:#f1f5f9; }
+*{box-sizing:border-box}
+body{margin:0;padding:20px;padding-top:70px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg)}
+.search-box{position:fixed;top:0;left:0;right:0;z-index:50;background:#fff;padding:12px 20px;display:flex;gap:10px;align-items:center;box-shadow:0 4px 20px rgba(0,0,0,.05)}
+.search-input{flex:1;border:none;background:#f1f5f9;padding:12px 16px;border-radius:20px}
+.add-btn{background:var(--primary);color:#fff;border:none;width:40px;height:40px;border-radius:50%;font-size:24px}
+.filter-scroll{display:flex;gap:10px;overflow-x:auto;padding:10px 0}
+.filter-btn{padding:8px 16px;border-radius:20px;border:1px solid #e2e8f0;background:#fff;font-size:13px}
+.filter-btn.active{background:var(--primary);color:#fff}
+.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:15px;position:relative}
+.card img{max-width:100%;border-radius:8px;margin-top:8px}
+.card-tag{font-size:12px;font-weight:700;margin-bottom:6px;display:inline-block}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;z-index:100}
+.modal{background:#fff;width:100%;height:85vh;border-radius:24px 24px 0 0;padding:20px;overflow:auto}
+.form-control{width:100%;padding:12px;margin-bottom:12px;border-radius:10px;border:1px solid #e2e8f0}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;background:var(--primary);color:#fff;font-weight:700}
 </style>
 </head>
 <body>
 
-<header>
-  <h2>销售智库</h2>
-  <a href="login.html">管理</a>
-</header>
+<div class="search-box">
+  <input id="searchInput" class="search-input" placeholder="搜索内容" oninput="render()">
+  <button class="add-btn" onclick="openPublish()">+</button>
+</div>
 
-<div id="list">加载中...</div>
+<div class="filter-scroll">
+  <div class="filter-btn active" onclick="setFilter('all',this)">全部</div>
+  <div class="filter-btn" onclick="setFilter('小单成交',this)">小单成交</div>
+  <div class="filter-btn" onclick="setFilter('复购成交',this)">复购成交</div>
+  <div class="filter-btn" onclick="setFilter('大单客户',this)">大单客户</div>
+  <div class="filter-btn" onclick="setFilter('顾虑解决',this)">顾虑解决</div>
+</div>
+
+<div id="list">加载中…</div>
+
+<!-- 登录 -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal">
+    <h3>管理员登录</h3>
+    <input id="adminUser" class="form-control" placeholder="账号">
+    <input id="adminPass" type="password" class="form-control" placeholder="密码">
+    <button class="btn" onclick="login()">登录</button>
+  </div>
+</div>
+
+<!-- 发布 -->
+<div class="modal-overlay" id="publishModal">
+  <div class="modal">
+    <h3>发布内容</h3>
+    <select id="pType" class="form-control">
+      <option>小单成交</option>
+      <option>复购成交</option>
+      <option>大单客户</option>
+      <option>顾虑解决</option>
+    </select>
+    <input id="pTitle" class="form-control" placeholder="标题">
+    <textarea id="pContent" class="form-control" placeholder="内容"></textarea>
+    <input id="pImages" class="form-control" placeholder="图片URL，逗号分隔">
+    <input id="pAuthor" class="form-control" placeholder="发布人">
+    <button class="btn" onclick="publish()">发布</button>
+  </div>
+</div>
 
 <script>
-const APP_ID = '711a5754d90f2ed8dcafc8ebb1b640cd';
-const REST_KEY = '440f810266f7e9b5a3e50b59480d7e2e';
-const TABLE = 'SalesData';
+const APP_ID='711a5754d90f2ed8dcafc8ebb1b640cd';
+const REST_KEY='440f810266f7e9b5a3e50b59480d7e2e';
+const DATA_URL='https://api.bmobcloud.com/1/classes/DealRecord';
+const ADMIN_URL='https://api.bmobcloud.com/1/classes/AdminUser';
+let all=[];let filter='all';
 
-fetch(`https://api.bmobcloud.com/1/classes/${TABLE}?order=-createdAt`,{
-  headers:{
+function api(url,opt={}){
+  opt.headers=Object.assign({
     'X-Bmob-Application-Id':APP_ID,
-    'X-Bmob-REST-API-Key':REST_KEY
-  }
-})
-.then(r=>r.json())
-.then(d=>{
-  list.innerHTML = d.results.map(i=>`
-    <div class="card">
-      <b>${i.type}</b>
-      <h3>${i.title}</h3>
-      <p>${i.content}</p>
-      <small>${i.author||'管理员'}</small>
-    </div>
-  `).join('');
-});
-</script>
+    'X-Bmob-REST-API-Key':REST_KEY,
+    'Content-Type':'application/json'
+  },opt.headers||{});
+  return fetch(url,opt).then(r=>r.json());
+}
 
+function load(){
+  api(DATA_URL+'?order=-createdAt').then(r=>{all=r.results||[];render();});
+}
+
+function render(){
+  const kw=(searchInput.value||'').toLowerCase();
+  const box=document.getElementById('list');box.innerHTML='';
+  all.filter(i=>{
+    return (filter==='all'||i.type===filter)&&((i.title||'').toLowerCase().includes(kw)||(i.content||'').toLowerCase().includes(kw));
+  }).forEach(i=>{
+    box.innerHTML+=`<div class='card'>
+      <div class='card-tag'>${i.type}</div>
+      <h3>${i.title}</h3>
+      <div>${i.content}</div>
+      ${(i.images||[]).map(u=>`<img src='${u}'>`).join('')}
+      <div style='font-size:12px;color:#999'>${i.author||''}</div>
+    </div>`;
+  });
+}
+
+function setFilter(t,el){filter=t;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');render();}
+
+function openPublish(){
+  const t=localStorage.getItem('adminLogin');
+  if(!t||Date.now()-t>7*24*3600*1000){document.getElementById('loginModal').style.display='flex';}
+  else document.getElementById('publishModal').style.display='flex';
+}
+
+function login(){
+  const u=adminUser.value,p=adminPass.value;
+  const where=encodeURIComponent(JSON.stringify({username:u,password:p,enabled:true}));
+  api(ADMIN_URL+'?where='+where).then(r=>{
+    if(r.results.length){localStorage.setItem('adminLogin',Date.now());loginModal.style.display='none';publishModal.style.display='flex';}
+    else alert('账号或密码错误');
+  });
+}
+
+function publish(){
+  api(DATA_URL,{method:'POST',body:JSON.stringify({
+    type:pType.value,
+    title:pTitle.value,
+    content:pContent.value,
+    images:pImages.value?pImages.value.split(','):[],
+    author:pAuthor.value
+  })}).then(()=>{publishModal.style.display='none';load();});
+}
+
+load();
+</script>
 </body>
 </html>
