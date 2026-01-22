@@ -1,0 +1,73 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>管理后台</title>
+<script src="https://unpkg.com/bmob-js-sdk"></script>
+<style>
+body{background:#f5f7fb;font-family:system-ui;padding:20px}
+.card{background:#fff;padding:16px;border-radius:10px;margin-bottom:12px}
+button{margin-right:8px}
+</style>
+</head>
+<body>
+
+<h2>管理后台</h2>
+<button onclick="logout()">退出</button>
+
+<h3>发布内容</h3>
+<input id="title" placeholder="标题"><br><br>
+<textarea id="content" placeholder="内容"></textarea><br><br>
+<button onclick="publish()">发布</button>
+
+<hr>
+
+<h3>内容管理</h3>
+<div id="list"></div>
+
+<script>
+Bmob.initialize("你的AppID","你的APIKey")
+
+// 登录态校验（7 天有效，Bmob 已内置）
+if(!Bmob.User.current()){
+  location.href='login.html'
+}
+
+function publish(){
+  const q=Bmob.Query('Post')
+  q.set('title',title.value)
+  q.set('content',content.value)
+  q.save().then(()=>{
+    title.value=''
+    content.value=''
+    load()
+  })
+}
+
+function del(id){
+  if(!confirm('确定删除？'))return
+  Bmob.Query('Post').destroy(id).then(load)
+}
+
+function load(){
+  Bmob.Query('Post').order('-createdAt').find().then(res=>{
+    list.innerHTML=res.map(i=>`
+      <div class="card">
+        <b>${i.title}</b>
+        <p>${i.content}</p>
+        <button onclick="del('${i.objectId}')">删除</button>
+      </div>
+    `).join('')
+  })
+}
+
+function logout(){
+  Bmob.User.logout()
+  location.href='index.html'
+}
+
+load()
+</script>
+</body>
+</html>
