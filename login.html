@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>管理员登录</title>
+<script src="https://unpkg.com/bmob-js-sdk"></script>
+</head>
+<body>
+
+<h3>管理员登录</h3>
+<input id="u" placeholder="账号"><br><br>
+<input id="p" type="password" placeholder="密码"><br><br>
+<button onclick="login()">登录</button>
+
+<script>
+Bmob.initialize("你的AppID","你的APIKey")
+
+function login(){
+  Bmob.User.login(
+    document.getElementById('u').value,
+    document.getElementById('p').value
+  ).then(()=>{
+    location.href = 'admin.html'
+  }).catch(()=>alert('登录失败'))
+}
+</script>
+</body>
+</html>
